@@ -27,8 +27,12 @@ impl Default for Config {
 }
 
 impl Config {
-    pub fn load() -> Result<Self, ConfigError> {
-        let config_path = Self::config_path()?;
+    /// Load config from the default location or an optional override path.
+    pub fn load(config_override: Option<&PathBuf>) -> Result<Self, ConfigError> {
+        let config_path = config_override
+            .cloned()
+            .or_else(|| Self::config_path().ok())
+            .ok_or_else(|| ConfigError::Message("Could not determine config path".to_string()))?;
 
         let s = ConfigRS::builder()
             .add_source(File::new(
@@ -70,21 +74,18 @@ impl Config {
                 .map_err(|e| ConfigError::Message(e.to_string()))?;
         }
 
-        let default_config = Config {
-            enable_feature: true,
-            projects: HashMap::new(),
-        };
-
         // Create the YAML with comments explaining the format
         let yaml_str = format!(
             r#"# Configuration file for indice
 # Enable or disable features
 enable_feature: true
 
-# Project definitions
+# Project definitions (paths support $HOME, ~, or bare relative → ~/)
 projects:
   # example:
-  #   - path: /absolute/path/to/project
+  #   - path: $HOME/projects/myproject
+  #   - path: ~/workspace/another-project
+  #   - path: projects/foo  (treated as ~/projects/foo)
 "#
         );
 

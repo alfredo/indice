@@ -1,6 +1,6 @@
 # Indice
 
-A simple CLI tool to navigate between projects using configuration in `.indicerc`.
+A simple CLI tool to navigate between projects using configuration in `.indicerc`. Use `--config` to specify a different config file.
 
 
 # Setup
@@ -35,16 +35,18 @@ After installation, edit your `~/.indicerc` file to add your projects:
 # Enable or disable features
 enable_feature: true
 
-# Project definitions
+# Project definitions (paths support $HOME, ~, or bare relative → ~/)
 projects:
   # Add your projects here
   myproject:
-    - path: /absolute/path/to/myproject
+    - path: $HOME/projects/myproject
 
   another-project:
-    - path: /path/to/another/project
+    - path: ~/workspace/another-project
 ```
 
 Each project entry requires:
 - A unique project name
-- A path to the project directory
+- A path to the project directory:
+  - `$HOME/path` or `~/path` — explicit home-relative (portable)
+  - `projects/foo` — bare relative paths are treated as `~/projects/foo`
